@@ -94,7 +94,11 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 func APIHandler(app *fiber.App) {
 	app.All("/*", func(c *fiber.Ctx) error {
 		path := c.Path()
+		query := c.Request().URI().QueryString()
 		url := "https://claude.ai" + path
+		if len(query) > 0 {
+			url += "?" + string(query)
+		}
 		return forwardRequest(c, url)
 	})
 }
