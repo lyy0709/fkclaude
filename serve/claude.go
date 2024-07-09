@@ -45,6 +45,12 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 	}
 	req.Header = utls.GetBrowserFrom(c)
 	log.Printf("Forwarding request to: %s", url)
+	for key, values := range req.Header {
+		for _, value := range values {
+			log.Printf("Request Header: %s: %s", key, value)
+		}
+	}
+
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("Failed to send request: %v\n", err)
@@ -53,6 +59,11 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 	defer res.Body.Close()
 
 	log.Printf("Received response with status: %d", res.StatusCode)
+	for key, values := range res.Header {
+		for _, value := range values {
+			log.Printf("Response Header: %s: %s", key, value)
+		}
+	}
 
 	for _, cookie := range res.Cookies() {
 		existingCookie := c.Cookies(cookie.Name)
