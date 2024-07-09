@@ -2,8 +2,8 @@ package serve
 
 import (
 	"bytes"
-	"fkclaude/utls"
 	"fmt"
+	"fkclaude/utls"
 	http "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/gofiber/fiber/v2"
@@ -44,12 +44,15 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 		return err
 	}
 	req.Header = utls.GetBrowserFrom(c)
+	log.Printf("Forwarding request to: %s", url)
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("Failed to send request: %v\n", err)
 		return err
 	}
 	defer res.Body.Close()
+
+	log.Printf("Received response with status: %d", res.StatusCode)
 
 	for _, cookie := range res.Cookies() {
 		existingCookie := c.Cookies(cookie.Name)
@@ -67,23 +70,14 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 	}
 
 	responseContentType := res.Header.Get("Content-Type")
-	if strings.HasPrefix(responseContentType, "application/octet-stream") ||
-		strings.HasPrefix(responseContentType, "video/") ||
-		strings.HasPrefix(responseContentType, "audio/") ||
-		strings.HasPrefix(responseContentType, "text/event-stream") {
-		c.Set("Content-Type", responseContentType)
-		log.Print("Content-Type: ", responseContentType)
-		c.Status(res.StatusCode)
-		io.Copy(c, res.Body)
-		res.Body.Close()
-		return nil
-
-	} else {
-		c.Status(res.StatusCode)
-		io.Copy(c, res.Body)
-		res.Body.Close()
-		return nil
+	c.Set("Content-Type", responseContentType)
+	c.Status(res.StatusCode)
+	_, err = io.Copy(c, res.Body)
+	if err != nil {
+		fmt.Printf("Failed to copy response body: %v\n", err)
+		return err
 	}
+	return nil
 }
 
 func APIHandler(app *fiber.App) {
