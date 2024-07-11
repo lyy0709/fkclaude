@@ -6,14 +6,11 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-
 COPY . .
-
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fkclaude .
 
 FROM alpine
-
 
 RUN apk update \
     && apk upgrade \
@@ -21,6 +18,7 @@ RUN apk update \
     && update-ca-certificates 2>/dev/null || true
 
 COPY --from=builder /app/fkclaude /fkclaude
+COPY --from=builder /app/static /static  # 复制 static 目录
 
 # 暴露端口
 EXPOSE 3650
