@@ -65,6 +65,15 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 		}
 	}
 
+	// Capture the response body for logging
+	var resBody bytes.Buffer
+	_, err = io.Copy(&resBody, res.Body)
+	if err != nil {
+		log.Printf("Failed to read response body: %v", err)
+		return err
+	}
+	log.Printf("Response Body: %s", resBody.String())
+
 	for _, cookie := range res.Cookies() {
 		existingCookie := c.Cookies(cookie.Name)
 		if len(existingCookie) == 0 || cookie.Name != "__cf_bm" {
@@ -83,7 +92,7 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 	responseContentType := res.Header.Get("Content-Type")
 	c.Set("Content-Type", responseContentType)
 	c.Status(res.StatusCode)
-	_, err = io.Copy(c, res.Body)
+	_, err = io.Copy(c, &resBody)
 	if err != nil {
 		fmt.Printf("Failed to copy response body: %v\n", err)
 		return err
@@ -99,6 +108,7 @@ func APIHandler(app *fiber.App) {
 		if len(query) > 0 {
 			url += "?" + string(query)
 		}
+		log.Printf("Handling request for path: %s", path)
 		return forwardRequest(c, url)
 	})
 }
