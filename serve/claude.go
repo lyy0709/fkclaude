@@ -44,12 +44,6 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 		return err
 	}
 	req.Header = utls.GetBrowserFrom(c)
-	log.Printf("Forwarding request to: %s", url)
-	for key, values := range req.Header {
-		for _, value := range values {
-			log.Printf("Request Header: %s: %s", key, value)
-		}
-	}
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -57,14 +51,6 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 		return err
 	}
 	defer res.Body.Close()
-
-	log.Printf("Received response with status: %d", res.StatusCode)
-	for key, values := range res.Header {
-		for _, value := range values {
-			log.Printf("Response Header: %s: %s", key, value)
-		}
-	}
-
 	// Capture the response body for logging
 	var resBody bytes.Buffer
 	_, err = io.Copy(&resBody, res.Body)
@@ -72,7 +58,6 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 		log.Printf("Failed to read response body: %v", err)
 		return err
 	}
-	log.Printf("Response Body: %s", resBody.String())
 
 	for _, cookie := range res.Cookies() {
 		existingCookie := c.Cookies(cookie.Name)
@@ -103,12 +88,14 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 func APIHandler(app *fiber.App) {
 	app.All("/*", func(c *fiber.Ctx) error {
 		path := c.Path()
+		if !strings.HasPrefix(path, "/claude") {
+			return c.Status(fiber.StatusForbidden).SendString("Access to this path is forbidden")
+		}
 		query := c.Request().URI().QueryString()
 		url := "https://claude.ai" + path
 		if len(query) > 0 {
 			url += "?" + string(query)
 		}
-		log.Printf("Handling request for path: %s", path)
 		return forwardRequest(c, url)
 	})
 }
