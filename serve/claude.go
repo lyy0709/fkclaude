@@ -88,9 +88,6 @@ func forwardRequest(c *fiber.Ctx, url string) error {
 func APIHandler(app *fiber.App) {
 	app.All("/*", func(c *fiber.Ctx) error {
 		path := c.Path()
-		if !strings.HasPrefix(path, "/claude") {
-			return c.Status(fiber.StatusForbidden).SendString("Access to this path is forbidden")
-		}
 		query := c.Request().URI().QueryString()
 		url := "https://claude.ai" + path
 		if len(query) > 0 {
