@@ -18,3 +18,4 @@ func SetupRoutes(app *fiber.App) {
 	// Handle all other requests
 	serve.APIHandler(app)
 }
+
