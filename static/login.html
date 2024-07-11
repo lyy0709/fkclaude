@@ -56,18 +56,18 @@
 <body>
     <div class="container">
         <h1>Session Key登录</h1>
-        <input type="text" id="tokenInput" placeholder="请输入sessionKey">
-        <button id="saveButton">保存并登录</button>
+        <form id="loginForm" method="post" action="/login">
+            <input type="text" id="tokenInput" name="sessionKey" placeholder="请输入sessionKey">
+            <button type="submit">保存并登录</button>
+        </form>
         <div id="cookieDisplay"></div>
     </div>
 
     <script>
-        document.getElementById('saveButton').addEventListener('click', function() {
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
             var token = document.getElementById('tokenInput').value;
-            var cookieValue = 'sessionKey=' + token + '; path=/';
-            document.cookie = cookieValue;
-            document.getElementById('cookieDisplay').textContent = '已保存: ' + cookieValue;
-            // 注意: 这里不再重新加载页面,而是显示保存成功的信息
+            document.cookie = 'sessionKey=' + token + '; path=/';
+            document.getElementById('cookieDisplay').textContent = '已保存: ' + document.cookie;
         });
     </script>
 </body>

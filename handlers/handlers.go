@@ -6,7 +6,7 @@ import (
 
 // LoginPage serves the login page
 func LoginPage(c *fiber.Ctx) error {
-	return c.SendFile("/app/static/login.html")
+	return c.SendFile("/static/login.html")
 }
 
 // Login handles the session key submission

@@ -18,7 +18,7 @@ RUN apk update \
     && update-ca-certificates 2>/dev/null || true
 
 COPY --from=builder /app/fkclaude /fkclaude
-COPY --from=builder /app/static /static  # 复制 static 目录
+COPY --from=builder /app/static /static
 
 # 暴露端口
 EXPOSE 3650
