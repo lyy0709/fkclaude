@@ -13,6 +13,11 @@ import (
 )
 
 func forwardRequest(c *fiber.Ctx, url string) error {
+	// Ensure the URL is for claude.ai
+	if !strings.HasPrefix(url, "https://claude.ai") {
+		return c.Status(fiber.StatusForbidden).SendString("Only requests to claude.ai are allowed")
+	}
+
 	method := string(c.Request().Header.Method())
 	ua := c.Request().Header.Peek("User-Agent")
 	body := c.Request().Body()
